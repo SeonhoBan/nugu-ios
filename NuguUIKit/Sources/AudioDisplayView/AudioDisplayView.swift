@@ -28,15 +28,13 @@ public class AudioDisplayView: UIView {
     // IBOutlets
     @IBOutlet weak var barTypeButton: UIButton!
     
-    @IBOutlet weak var fullAudioPlayerContainerView: UIView!
-    
     @IBOutlet weak var titleView: DisplayTitleView!
         
     @IBOutlet weak var albumImageContainerView: UIView!
     @IBOutlet weak var albumImageView: UIImageView!
     @IBOutlet weak var albumImageViewShadowView: UIView!
     
-    @IBOutlet weak var contentStackView: UIStackView!
+    @IBOutlet weak var smallLyricsView: UIView!
     
     @IBOutlet weak var favoriteButtonContainerView: UIView!
     @IBOutlet weak var favoriteButton: UIButton!
@@ -45,22 +43,27 @@ public class AudioDisplayView: UIView {
     @IBOutlet weak var subtitle1Label: UILabel!
     @IBOutlet weak var subtitle2Label: UILabel!
     
+    // Player
+    @IBOutlet weak var progressView: UIProgressView!
+    @IBOutlet weak var elapsedTimeLabel: UILabel!
+    @IBOutlet weak var durationTimeLabel: UILabel!
+
     @IBOutlet weak var repeatButton: UIButton!
     @IBOutlet weak var prevButton: UIButton!
     @IBOutlet weak var playPauseButton: UIButton!
     @IBOutlet weak var nextButton: UIButton!
     @IBOutlet weak var shuffleButton: UIButton!
     
+    // Lyrics
     @IBOutlet weak var lyricsView: UIView!
     @IBOutlet weak var currentLyricsLabel: UILabel!
-    
-    @IBOutlet weak var progressView: UIProgressView!
-    @IBOutlet weak var elapsedTimeLabel: UILabel!
-    @IBOutlet weak var durationTimeLabel: UILabel!
     
     @IBOutlet weak var idleBar: DisplayIdleBar!
     @IBOutlet private weak var idleBarHeightConstraint: NSLayoutConstraint!
     
+    @IBOutlet weak var fullPlayerContainerView: UIView!
+    
+    // Bar Player
     @IBOutlet weak var audioPlayerBarViewContainerView: UIView!
     @IBOutlet weak var audioPlayerBarView: AudioPlayerBarView!
     
@@ -95,7 +98,8 @@ public class AudioDisplayView: UIView {
     
     public var theme: AudioDisplayTheme = UserInterfaceUtil.style == .dark ? .dark : .light {
         didSet {
-            fullAudioPlayerContainerView.backgroundColor = theme.backgroundColor
+            backgroundColor = theme.backgroundColor
+            fullPlayerContainerView.backgroundColor = theme.backgroundColor
             audioPlayerBarViewContainerView.backgroundColor = theme.barPlayerBackgroundColor
             audioPlayerBarView.subviews.first?.backgroundColor = theme.barPlayerBackgroundColor
             audioPlayerBarView.headerLabel.textColor = theme.titleLabelTextColor
@@ -172,8 +176,8 @@ public class AudioDisplayView: UIView {
             return false
         }
         fullLyricsView.isHidden = true
-        fullAudioPlayerContainerView.sendSubviewToBack(fullLyricsView)
-        contentStackView.isHidden = false
+        fullPlayerContainerView.sendSubviewToBack(fullLyricsView)
+        smallLyricsView.isHidden = false
         return true
     }
     
@@ -245,16 +249,16 @@ public class AudioDisplayView: UIView {
     func showLyrics() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.contentStackView.isHidden = true
+            self.smallLyricsView.isHidden = true
             self.updateFullLyrics()
             self.fullLyricsView.onViewDidTap = { [weak self] in
                 guard let self = self else { return }
                 self.fullLyricsView.isHidden = true
-                self.fullAudioPlayerContainerView.sendSubviewToBack(self.fullLyricsView)
-                self.contentStackView.isHidden = false
+                self.fullPlayerContainerView.sendSubviewToBack(self.fullLyricsView)
+                self.smallLyricsView.isHidden = false
             }
             self.fullLyricsView.isHidden = false
-            self.fullAudioPlayerContainerView.bringSubviewToFront(self.fullLyricsView)
+            self.fullPlayerContainerView.bringSubviewToFront(self.fullLyricsView)
         }
     }
     
@@ -309,12 +313,12 @@ public extension AudioDisplayView {
             guard let self = self else { return }
             self.audioPlayerBarViewContainerView.isHidden = false
             self.audioPlayerBarViewContainerView.alpha = 1.0
-            self.fullAudioPlayerContainerView.transform = CGAffineTransform(translationX: 0.0, y: self.fullAudioPlayerContainerView.bounds.height)
-            self.fullAudioPlayerContainerView.alpha = 0.0
+            self.fullPlayerContainerView.transform = CGAffineTransform(translationX: 0.0, y: self.fullPlayerContainerView.bounds.height)
+            self.fullPlayerContainerView.alpha = 0.0
         } completion: { [weak self] _ in
             guard let self = self else { return }
-            self.fullAudioPlayerContainerView.isHidden = true
-            self.fullAudioPlayerContainerView.heightAnchor.constraint(equalToConstant: self.audioPlayerBarViewContainerView.frame.size.height).isActive = true
+            self.fullPlayerContainerView.isHidden = true
+            self.fullPlayerContainerView.heightAnchor.constraint(equalToConstant: self.audioPlayerBarViewContainerView.frame.size.height).isActive = true
         }
     }
     
@@ -323,14 +327,14 @@ public extension AudioDisplayView {
             topConstraint = topAnchor.constraint(equalTo: superview.topAnchor)
         }
         topConstraint?.isActive = true
-        fullAudioPlayerContainerView.heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.size.height).isActive = true
+        fullPlayerContainerView.heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.size.height).isActive = true
         
         UIView.animate(withDuration: duration) { [weak self] in
             guard let self = self else { return }
-            self.fullAudioPlayerContainerView.isHidden = false
+            self.fullPlayerContainerView.isHidden = false
             self.audioPlayerBarViewContainerView.alpha = 0.0
-            self.fullAudioPlayerContainerView.transform = CGAffineTransform(translationX: 0.0, y: 0)
-            self.fullAudioPlayerContainerView.alpha = 1.0
+            self.fullPlayerContainerView.transform = CGAffineTransform(translationX: 0.0, y: 0)
+            self.fullPlayerContainerView.alpha = 1.0
         } completion: { [weak self] _ in
             self?.audioPlayerBarViewContainerView.isHidden = true
         }
